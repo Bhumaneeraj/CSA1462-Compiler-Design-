@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_RULES 10
+#define MAX_LEN 100
+
+char productions[MAX_RULES][MAX_LEN];
+int numProductions;
+
+void eliminateLeftRecursion() {
+    int i, j, k;
+    char alpha[MAX_LEN], beta[MAX_LEN];
+
+    for (i = 0; i < numProductions; i++) {
+        for (j = 0; productions[i][j] != '\0' && productions[i][j] != '|'; j++);
+        
+        if (productions[i][0] == productions[i][j+1] && productions[i][j+1] != '\0') {
+            strcpy(alpha, productions[i]+j+2);
+            alpha[strlen(alpha)] = '\0';
+            strcpy(beta, productions[i]+1);
+            beta[strlen(beta)] = '\0';
+
+            for (k = 0; k < numProductions; k++) {
+                if (productions[k][0] == productions[i][0]) {
+                    strcpy(productions[k], alpha);
+                    strcat(productions[k], productions[numProductions]);
+                    strcpy(productions[numProductions], beta);
+                    strcat(productions[numProductions], alpha);
+                    numProductions++;
+                }
+            }
+        }
+    }
+}
+
+void displayProductions() {
+    printf("Productions after left recursion elimination:\n");
+    for (int i = 0; i < numProductions; i++) {
+        printf("%s\n", productions[i]);
+    }
+}
+
+int main() {
+    printf("Enter the number of productions: ");
+    scanf("%d", &numProductions);
+    printf("Enter the productions:\n");
+    for (int i = 0; i < numProductions; i++) {
+        scanf("%s", productions[i]);
+    }
+    eliminateLeftRecursion();
+    displayProductions();
+    return 0;
+}
