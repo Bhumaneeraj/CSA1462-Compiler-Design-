@@ -1,0 +1,26 @@
+#include <stdio.h>
+
+int main() {
+    int a, b, c, d, result1, result2;
+
+    // Input values
+    printf("Enter values for a, b, c, and d: ");
+    scanf("%d %d %d %d", &a, &b, &c, &d);
+
+    // Original expressions
+    result1 = (a + b) * c;
+    result2 = (a + b) * d;
+
+    // Optimized expression
+    int common_part = a + b;
+    result1 = common_part * c;
+    result2 = common_part * d;
+
+    // Output results
+    printf("Original result 1: %d\n", result1);
+    printf("Original result 2: %d\n", result2);
+    printf("Optimized result 1: %d\n", result1);
+    printf("Optimized result 2: %d\n", result2);
+
+    return 0;
+}
