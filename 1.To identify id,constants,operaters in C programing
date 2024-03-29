@@ -1,0 +1,64 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+
+#define MAX_IDENTIFIER_LENGTH 50
+#define MAX_CONSTANT_LENGTH 50
+
+typedef enum {IDENTIFIER, CONSTANT, OPERATOR} TokenType;
+typedef struct {TokenType type; char value[MAX_IDENTIFIER_LENGTH + 1];} Token;
+
+int is_op(char c) {return strchr("+-*/=(){}", c) != NULL;}
+int is_valid_id(char c) {return isalnum(c) || c == '_';}
+int is_valid_const(char c) {return isdigit(c);}
+
+Token* next_tok(char **inp) {
+    Token *tok = (Token *)malloc(sizeof(Token));
+    if (!tok) exit(EXIT_FAILURE);
+
+    while (isspace(**inp) || (**inp == '/' && ((*inp)[1] == '/' || (*inp)[1] == '*'))) {
+        if (**inp == '/' && (*inp)[1] == '/') while (*(*inp)++ != '\n');
+        else if (**inp == '/' && (*inp)[1] == '*') while (*(*inp)++ && (**inp != '*' || (*inp)[1] != '/'));
+        else (*inp)++;
+    }
+
+    if (**inp == '\0') return NULL;
+
+    char *start = *inp;
+    if (is_valid_id(**inp)) {
+        tok->type = IDENTIFIER; int i = 0;
+        while (is_valid_id(**inp) && i < MAX_IDENTIFIER_LENGTH) tok->value[i++] = *(*inp)++;
+        tok->value[i] = '\0';
+    } else if (is_valid_const(**inp)) {
+        tok->type = CONSTANT; int i = 0;
+        while (is_valid_const(**inp) && i < MAX_CONSTANT_LENGTH) tok->value[i++] = *(*inp)++;
+        tok->value[i] = '\0';
+    } else if (is_op(**inp)) {
+        tok->type = OPERATOR; tok->value[0] = *(*inp)++; tok->value[1] = '\0';
+    } else exit(EXIT_FAILURE);
+
+    return tok;
+}
+
+int main() {
+    char input[1000];
+
+    printf("Enter your code (press Ctrl+D to end):\n");
+    fgets(input, sizeof(input), stdin);
+
+    char *inp = input;
+    Token *tok;
+
+    printf("\nTokens:\n");
+    while ((tok = next_tok(&inp)) != NULL) {
+        switch (tok->type) {
+            case IDENTIFIER: printf("Identifier: %s\n", tok->value); break;
+            case CONSTANT: printf("Constant: %s\n", tok->value); break;
+            case OPERATOR: printf("Operator: %s\n", tok->value); break;
+        }
+        free(tok);
+    }
+
+    return 0;
+}
