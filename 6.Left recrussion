@@ -1,0 +1,98 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define MAX_PROD_LEN 100
+#define MAX_NON_TERMINALS 10
+typedef struct {
+    char non_terminal;
+    char production[MAX_PROD_LEN];
+} Production;
+void eliminate_left_recursion(Production *productions, int *num_productions, char non_terminals[], int num_non_terminals);
+void print_modified_grammar(Production *productions, int num_productions);
+int main() {
+    int num_productions;
+    printf("Enter the number of productions: ");
+    scanf("%d", &num_productions);
+    getchar(); // Consume newline character
+    Production *productions = (Production *)malloc(num_productions * sizeof(Production));
+    if (!productions) {
+        fprintf(stderr, "Memory allocation failed.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Enter the productions (separate non-terminal and production by '->'):\n");
+    for (int i = 0; i < num_productions; i++) {
+        scanf("%c -> %[^\n]", &productions[i].non_terminal, productions[i].production);
+        getchar(); 
+    }
+
+    char non_terminals[MAX_NON_TERMINALS];
+    int num_non_terminals = 0;
+    for (int i = 0; i < num_productions; i++) {
+        if (strchr(non_terminals, productions[i].non_terminal) == NULL) {
+            non_terminals[num_non_terminals++] = productions[i].non_terminal;
+        }
+    }
+
+    eliminate_left_recursion(productions, &num_productions, non_terminals, num_non_terminals);
+
+    printf("\nModified Grammar:\n");
+    print_modified_grammar(productions, num_productions);
+
+    free(productions);
+    return 0;
+}
+
+// Function to eliminate left recursion
+void eliminate_left_recursion(Production *productions, int *num_productions, char non_terminals[], int num_non_terminals) {
+    for (int i = 0; i < num_non_terminals; i++) {
+        char A = non_terminals[i];
+        int num_new_productions = 0;
+        Production new_productions[*num_productions];
+
+        for (int j = 0; j < *num_productions; j++) {
+            if (productions[j].non_terminal == A) {
+                if (productions[j].production[0] == A) {
+                    char X = productions[j].production[1];
+                    for (int k = 0; k < *num_productions; k++) {
+                        if (productions[k].non_terminal == A && productions[k].production[0] != A) {
+                            // A -> Xa production
+                            strcpy(new_productions[num_new_productions].production, productions[k].production);
+                            strcat(new_productions[num_new_productions].production, &X);
+                            num_new_productions++;
+                        }
+                    }
+
+                    for (int k = 0; k < *num_productions; k++) {
+                        if (productions[k].non_terminal == A && productions[k].production[0] == A) {
+                            strcpy(new_productions[num_new_productions].production, &productions[k].production[1]);
+                            strcat(new_productions[num_new_productions].production, &X);
+                            num_new_productions++;
+                        }
+                    }
+                } else {
+                    strcpy(new_productions[num_new_productions].production, productions[j].production);
+                    num_new_productions++;
+                }
+            }
+        }
+        for (int j = 0; j < num_new_productions; j++) {
+            productions[*num_productions + j].non_terminal = A;
+            strcpy(productions[*num_productions + j].production, new_productions[j].production);
+        }
+        for (int j = 0; j < *num_productions; j++) {
+            if (productions[j].non_terminal == A && productions[j].production[0] == A) {
+                for (int k = j; k < *num_productions - 1; k++) {
+                    productions[k] = productions[k + 1];
+                }
+                (*num_productions)--;
+                j--;
+            }
+        }
+    }
+}
+void print_modified_grammar(Production *productions, int num_productions) {
+    for (int i = 0; i < num_productions; i++) {
+        printf("%c -> %s\n", productions[i].non_terminal, productions[i].production);
+    }
+}
