@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdlib.h> // Include stdlib.h for malloc and free
+
+// Define the structure for the AST node
+typedef struct TreeNode {
+    char* operation;
+    struct TreeNode* left;
+    struct TreeNode* right;
+} TreeNode;
+
+// Function to generate machine code or intermediate representation from AST
+void generateCode(TreeNode* node) {
+    if (node == NULL) {
+        return;
+    }
+
+    // Recursively generate code for the left and right subtrees
+    generateCode(node->left);
+    generateCode(node->right);
+
+    // Print or generate machine code based on the operation of the current node
+    printf("Generate code for operation: %s\n", node->operation);
+
+    // Additional code generation logic based on the operation
+    // For simplicity, we're just printing the operation here
+}
+
+int main() {
+    // Example abstract syntax tree (AST)
+    TreeNode* rootNode = (TreeNode*)malloc(sizeof(TreeNode));
+    rootNode->operation = "+";
+
+    rootNode->left = (TreeNode*)malloc(sizeof(TreeNode));
+    rootNode->left->operation = "3";
+    rootNode->left->left = NULL;
+    rootNode->left->right = NULL;
+
+    rootNode->right = (TreeNode*)malloc(sizeof(TreeNode));
+    rootNode->right->operation = "*";
+    rootNode->right->left = (TreeNode*)malloc(sizeof(TreeNode));
+    rootNode->right->left->operation = "5";
+    rootNode->right->left->left = NULL;
+    rootNode->right->left->right = NULL;
+    rootNode->right->right = (TreeNode*)malloc(sizeof(TreeNode));
+    rootNode->right->right->operation = "2";
+    rootNode->right->right->left = NULL;
+    rootNode->right->right->right = NULL;
+
+    // Generate code from the AST
+    generateCode(rootNode);
+
+    // Free memory allocated for the AST nodes
+    // Add additional cleanup code as needed
+    free(rootNode->left);
+    free(rootNode->right->left);
+    free(rootNode->right->right);
+    free(rootNode->right);
+    free(rootNode);
+
+    return 0;
+}
+
